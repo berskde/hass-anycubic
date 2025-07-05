@@ -10,8 +10,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     entities = [
         AnycubicPrinterInfoSensor(coordinator),
-        AnycubicTemperatureSensor(coordinator),
-        AnycubicFanSensor(coordinator),
         AnycubicPrintJobSensor(coordinator),
         AnycubicSlotsSensor(coordinator),
     ]
@@ -26,52 +24,21 @@ class AnycubicPrinterInfoSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self):
-        return self.coordinator.data.get("info", {}).get("data", {}).get("model")
+        return self.coordinator.data.get("info", {}).get("data", {}).get("state")
 
     @property
     def extra_state_attributes(self):
         info = self.coordinator.data.get("info", {}).get("data", {})
         return {
+            "model": info.get("model"),
             "ip": info.get("ip"),
-            "firmware_version": info.get("version"),
-        }
-
-
-class AnycubicTemperatureSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator):
-        super().__init__(coordinator)
-        self._attr_name = "Anycubic Temperatures"
-        self._attr_unique_id = "anycubic_temperatures"
-
-    @property
-    def native_value(self):
-        return self.coordinator.data.get("info", {}).get("data", {}).get("temp", {}).get("curr_nozzle_temp")
-
-    @property
-    def extra_state_attributes(self):
-        temp = self.coordinator.data.get("info", {}).get("data", {}).get("temp", {})
-        return {
-            "current_bed_temp": temp.get("curr_hotbed_temp"),
-            "target_bed_temp": temp.get("target_hotbed_temp"),
-            "target_nozzle_temp": temp.get("target_nozzle_temp"),
-        }
-
-
-class AnycubicFanSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator):
-        super().__init__(coordinator)
-        self._attr_name = "Anycubic Fans"
-        self._attr_unique_id = "anycubic_fans"
-
-    @property
-    def native_value(self):
-        return self.coordinator.data.get("info", {}).get("data", {}).get("fan_speed_pct")
-
-    @property
-    def extra_state_attributes(self):
-        info = self.coordinator.data.get("info", {}).get("data", {})
-        return {
-            "aux_fan_speed": info.get("aux_fan_speed_pct"),
+            "version": info.get("version"),
+            "curr_nozzle_temp": info.get("curr_nozzle_temp"),
+            "curr_hotbed_temp": info.get("curr_hotbed_temp"),
+            "target_hotbed_temp": info.get("target_hotbed_temp"),
+            "target_nozzle_temp": info.get("target_nozzle_temp"),
+            "fan_speed_pct": info.get("fan_speed_pct"),
+            "aux_fan_speed_pct": info.get("aux_fan_speed_pct"),
             "box_fan_level": info.get("box_fan_level"),
         }
 
@@ -79,23 +46,23 @@ class AnycubicFanSensor(CoordinatorEntity, SensorEntity):
 class AnycubicPrintJobSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_name = "Anycubic Print Job"
-        self._attr_unique_id = "anycubic_print_job"
+        self._attr_name = "Anycubic Print Status"
+        self._attr_unique_id = "anycubic_print_status"
 
     @property
     def native_value(self):
-        return self.coordinator.data.get("print", {}).get("state")
+        return self.coordinator.data.get("print", {}).get("__state__")
 
     @property
     def extra_state_attributes(self):
         print_data = self.coordinator.data.get("print", {}).get("data", {})
         return {
             "progress": print_data.get("progress"),
-            "current_layer": print_data.get("curr_layer"),
+            "curr_layer": print_data.get("curr_layer"),
             "total_layers": print_data.get("total_layers"),
-            "remaining_time": print_data.get("remain_time"),
+            "remain_time": print_data.get("remain_time"),
             "print_time": print_data.get("print_time"),
-            "file_name": print_data.get("filename"),
+            "filename": print_data.get("filename"),
             "supplies_usage": print_data.get("supplies_usage"),
         }
 
