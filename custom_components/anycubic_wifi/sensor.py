@@ -29,17 +29,18 @@ class AnycubicPrinterInfoSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         info = self.coordinator.data.get("info", {}).get("data", {})
+        temp = info.get("temp", {})
         return {
             "model": info.get("model"),
             "ip": info.get("ip"),
             "version": info.get("version"),
-            "curr_nozzle_temp": info.get("curr_nozzle_temp"),
-            "curr_hotbed_temp": info.get("curr_hotbed_temp"),
-            "target_hotbed_temp": info.get("target_hotbed_temp"),
-            "target_nozzle_temp": info.get("target_nozzle_temp"),
             "fan_speed_pct": info.get("fan_speed_pct"),
             "aux_fan_speed_pct": info.get("aux_fan_speed_pct"),
             "box_fan_level": info.get("box_fan_level"),
+            "curr_nozzle_temp": temp.get("curr_nozzle_temp"),
+            "curr_hotbed_temp": temp.get("curr_hotbed_temp"),
+            "target_nozzle_temp": temp.get("target_nozzle_temp"),
+            "target_hotbed_temp": temp.get("target_hotbed_temp"),
         }
 
 
