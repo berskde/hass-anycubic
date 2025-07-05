@@ -1,6 +1,9 @@
 import logging
+
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.const import UnitOfTemperature
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -10,6 +13,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     entities = [
         AnycubicPrinterInfoSensor(coordinator),
+        AnycubicNozzleTempSensor(coordinator),
+        AnycubicHotbedTempSensor(coordinator),
         AnycubicPrintJobSensor(coordinator),
         AnycubicSlotsSensor(coordinator),
     ]
@@ -29,7 +34,6 @@ class AnycubicPrinterInfoSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         info = self.coordinator.data.get("info", {}).get("data", {})
-        temp = info.get("temp", {})
         return {
             "model": info.get("model"),
             "ip": info.get("ip"),
@@ -37,10 +41,46 @@ class AnycubicPrinterInfoSensor(CoordinatorEntity, SensorEntity):
             "fan_speed_pct": info.get("fan_speed_pct"),
             "aux_fan_speed_pct": info.get("aux_fan_speed_pct"),
             "box_fan_level": info.get("box_fan_level"),
-            "curr_nozzle_temp": temp.get("curr_nozzle_temp"),
-            "curr_hotbed_temp": temp.get("curr_hotbed_temp"),
-            "target_nozzle_temp": temp.get("target_nozzle_temp"),
-            "target_hotbed_temp": temp.get("target_hotbed_temp"),
+        }
+
+
+class AnycubicNozzleTempSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Anycubic Nozzle Temperature"
+        self._attr_unique_id = "anycubic_nozzle_temperature"
+        self._attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+
+    @property
+    def native_value(self):
+        temp = self.coordinator.data.get("info", {}).get("data", {}).get("temp", {})
+        return temp.get("curr_nozzle_temp")
+
+    @property
+    def extra_state_attributes(self):
+        temp = self.coordinator.data.get("info", {}).get("data", {}).get("temp", {})
+        return {
+            "target_nozzle_temp": temp.get("target_nozzle_temp")
+        }
+
+
+class AnycubicHotbedTempSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Anycubic Hotbed Temperature"
+        self._attr_unique_id = "anycubic_hotbed_temperature"
+        self._attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+
+    @property
+    def native_value(self):
+        temp = self.coordinator.data.get("info", {}).get("data", {}).get("temp", {})
+        return temp.get("curr_hotbed_temp")
+
+    @property
+    def extra_state_attributes(self):
+        temp = self.coordinator.data.get("info", {}).get("data", {}).get("temp", {})
+        return {
+            "target_hotbed_temp": temp.get("target_hotbed_temp")
         }
 
 
