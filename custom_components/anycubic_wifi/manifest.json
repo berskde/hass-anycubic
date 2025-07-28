@@ -2,7 +2,7 @@
   "domain": "anycubic_wifi",
   "name": "Anycubic",
   "codeowners": [
-    "@bersk"
+    "@berskde"
   ],
   "config_flow": true,
   "dependencies": [],
@@ -11,5 +11,5 @@
   "issue_tracker": "https://github.com/berskde/hass-anycubic/issues",
   "requirements": [],
   "ssdp": [],
-  "version": "0.1.5"
+  "version": "0.1.7"
 }
